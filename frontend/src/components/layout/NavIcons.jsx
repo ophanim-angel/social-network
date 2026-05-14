@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import NotificationDropdown from "@/components/ui/NotificationDropdown";
 
 export default function NavIcons() {
   const { hasNewMessage, unreadCount } = useWebSocket();
@@ -11,7 +12,7 @@ export default function NavIcons() {
   // hasNewMessage represents chat specifically.
 
   return (
-    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+    <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
       {/* Chat Link 💬 */}
       <Link 
         href="/chat" 
@@ -24,13 +25,16 @@ export default function NavIcons() {
         )}
       </Link>
 
-      {/* Notification Link 🔔 */}
+      {/* Social Notification Dropdown 🔔 */}
+      <NotificationDropdown />
+
+      {/* General Notification Link ⚡ (Optional extra for other system notifications) */}
       <Link 
         href="/notifications" 
         style={containerStyle} 
-        title="Notifications"
+        title="All Activity"
       >
-        <span style={{ fontSize: "24px" }}>🔔</span>
+        <span style={{ fontSize: "24px" }}>⚡</span>
         {unreadCount > 0 && (
           <span style={badgeStyle}>{unreadCount}</span>
         )}
@@ -64,9 +68,9 @@ const badgeStyle = {
   position: "absolute",
   top: "-5px",
   right: "-5px",
-  background: "red",
+  background: "#007bff",
   color: "white",
-  borderRadius: "50%",
+  border-radius: "50%",
   width: "18px",
   height: "18px",
   fontSize: "11px",
