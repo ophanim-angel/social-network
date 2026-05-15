@@ -160,7 +160,7 @@ func (r *Repository) GetFollowers(userID string) ([]*Follower, error) {
 		FROM followers f
 		JOIN users u ON u.id = f.follower_id
 		WHERE f.followed_id = ?
-		ORDER BY COALESCE(u.nickname, u.first_name || ' ' || u.last_name) COLLATE NOCASE`
+		ORDER BY LOWER(u.first_name), LOWER(u.last_name)`
 	rows, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get followers: %w", err)

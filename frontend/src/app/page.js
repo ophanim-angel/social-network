@@ -53,7 +53,7 @@ export default function Feed() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [privacy, setPrivacy] = useState("public");
-  const [mentionInput, setMentionInput] = useState("@");
+  const [mentionInput, setMentionInput] = useState("");
   const [selectedFollowerIds, setSelectedFollowerIds] = useState([]);
   const [image, setImage] = useState(null);
   const [expandedPosts, setExpandedPosts] = useState({});
@@ -172,7 +172,7 @@ export default function Feed() {
       setTitle("");
       setContent("");
       setPrivacy("public");
-      setMentionInput("@");
+      setMentionInput("");
       setSelectedFollowerIds([]);
       setImage(null);
       form.reset();
@@ -184,15 +184,14 @@ export default function Feed() {
   };
 
   const handleMentionInputChange = (event) => {
-    const value = event.target.value;
-    setMentionInput(value.startsWith("@") ? value : `@${value}`);
+    setMentionInput(event.target.value);
   };
 
   const handleSelectFollower = (followerId) => {
     setSelectedFollowerIds((current) =>
       current.includes(followerId) ? current : [...current, followerId]
     );
-    setMentionInput("@");
+    setMentionInput("");
   };
 
   const handleRemoveFollower = (followerId) => {
@@ -421,7 +420,7 @@ export default function Feed() {
                     onClick={() => handleRemoveFollower(follower.id)}
                     aria-label={`Remove ${displayName(follower)}`}
                   >
-                    @{mentionHandle(follower)}
+                    {displayName(follower)}
                   </button>
                 ))}
                 <input
@@ -429,7 +428,7 @@ export default function Feed() {
                   type="text"
                   value={mentionInput}
                   onChange={handleMentionInputChange}
-                  placeholder="@username"
+                  placeholder="Search by first or last name"
                   autoComplete="off"
                   maxLength={MaxGroupInviteesLen}
                 />
@@ -452,7 +451,7 @@ export default function Feed() {
                       <Avatar user={follower} size="small" />
                       <span>
                         <strong>{displayName(follower)}</strong>
-                        <small>@{mentionHandle(follower)}</small>
+                        {follower.nickname && <small>@{mentionHandle(follower)}</small>}
                       </span>
                     </button>
                   ))
