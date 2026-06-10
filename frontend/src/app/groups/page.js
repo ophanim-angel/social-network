@@ -29,6 +29,7 @@ import {
   MaxImageSizeBytes,
   MaxImageSizeMB,
 } from "@/lib/limits";
+import Notification from "@/components/ui/Notification";
 import styles from "./Groups.module.css";
 
 export default function GroupsPage() {
@@ -283,6 +284,7 @@ export default function GroupsPage() {
 
   async function handleCreatePost(event) {
     event.preventDefault();
+    const form = getSubmitForm(event);
     setError("");
     try {
       const post = await createGroupPost(selectedGroupId, {
@@ -295,7 +297,7 @@ export default function GroupsPage() {
       }));
       updateDraft("post", "");
       setPostImage(null);
-      event.currentTarget.reset();
+      form?.reset();
     } catch (err) {
       setError(err.message || "Could not create post");
     }
@@ -324,6 +326,7 @@ export default function GroupsPage() {
 
   async function handleCreateComment(event, postId) {
     event.preventDefault();
+    const form = getSubmitForm(event);
     setError("");
     try {
       const comment = await createGroupComment(
@@ -340,7 +343,7 @@ export default function GroupsPage() {
       }));
       setCommentDrafts((current) => ({ ...current, [postId]: "" }));
       setCommentImages((current) => ({ ...current, [postId]: null }));
-      event.currentTarget.reset();
+      form?.reset();
     } catch (err) {
       setError(err.message || "Could not add comment");
     }
@@ -392,6 +395,7 @@ export default function GroupsPage() {
 
   return (
     <div className={styles.groupsPage}>
+      <Notification message={error} type="error" onClose={() => setError("")} />
       <aside className={styles.sidebar}>
         <section className={styles.panel}>
           <h1>Groups</h1>
@@ -481,12 +485,11 @@ export default function GroupsPage() {
       </aside>
 
       <main className={styles.groupMain}>
-        {error && <p className={styles.error}>{error}</p>}
         {!selectedGroup ? (
           <section className={styles.emptyState}>Select or create a group.</section>
         ) : (
           <>
-            <section className={styles.panel}>
+            <section className={`${styles.panel} ${styles.groupHero}`}>
               <div className={styles.groupHeader}>
                 <div>
                   <h1>{selectedGroup.title}</h1>
@@ -510,7 +513,7 @@ export default function GroupsPage() {
 
             {isMember ? (
               <div className={styles.contentGrid}>
-                <section className={styles.panel}>
+                <section className={`${styles.panel} ${styles.postsPanel}`}>
                   <h2>Group Feed</h2>
                   <form className={styles.composer} onSubmit={handleCreatePost}>
                     <textarea
@@ -758,6 +761,11 @@ function InviteSuggestions({ users, onSelect }) {
       ))}
     </div>
   );
+}
+
+function getSubmitForm(event) {
+  const form = event.currentTarget || event.target;
+  return form instanceof HTMLFormElement ? form : null;
 }
 
 function getMentionSuggestions(value, followers, allowCommaList, selectedUserIds = []) {

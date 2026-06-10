@@ -21,11 +21,12 @@ import (
 )
 
 func main() {
-	// Resolve project root (backend/) from this source file's location.
+	// Find project root relative to this source file.
 	// runtime.Caller works correctly with `go run`.
 	_, srcFile, _, _ := runtime.Caller(0)
 	projectRoot := filepath.Join(filepath.Dir(srcFile), "..", "..")
 
+	// Use env vars when available, otherwise use default local paths.
 	dbPath := getEnv("DB_PATH", filepath.Join(projectRoot, "data", "social_network.db"))
 	migrationsPath := getEnv("MIGRATIONS_PATH", filepath.Join(projectRoot, "migrations", "sqlite"))
 	port := strings.TrimPrefix(getEnv("PORT", "8080"), ":")
@@ -44,7 +45,7 @@ func main() {
 	}
 	log.Println("Migrations completed successfully.")
 
-	// Notification initialization
+	// Initialize notification and chat subsystems.
 	notifRepo := notification.NewRepository(db)
 	notifHandler := notification.NewHandler(notifRepo)
 
@@ -77,6 +78,7 @@ func main() {
 	sessionAuth := middleware.SessionMiddleware(authService)
 
 	// 4. Set up Routing (http.ServeMux)
+	// Register all API endpoints with the HTTP multiplexer.
 	mux := http.NewServeMux()
 
 	// Public routes
@@ -126,6 +128,7 @@ func main() {
 	mux.Handle("/uploads/groups/", sessionAuth(http.HandlerFunc(groupsHandler.ServeUpload)))
 	mux.Handle("/uploads/", sessionAuth(http.HandlerFunc(postsHandler.ServeUpload)))
 
+	// Wrap the router with global middleware before starting the server.
 	handler := middleware.RequestHeaderSizeMiddleware(16 << 10)(rateLimiter.Middleware()(mux))
 	handler = CORSMiddleware(handler)
 

@@ -1,39 +1,24 @@
 :root {
-  /* Dark Mode Defaults */
-  --bg-app: #121212;
-  --bg-sidebar: #1e1e1e;
+  --bg-app: #020c16;
+  --bg-sidebar: #01090f;
   --text-main: #ffffff;
-  --text-secondary: #aaaaaa;
-  --bg-bubble-me: #007bff;
+  --text-secondary: #94a3b8;
+  --bg-bubble-me: #1877F2;
   --text-bubble-me: #ffffff;
-  --bg-bubble-other: #2a2a2a;
+  --bg-bubble-other: #162c3e;
   --text-bubble-other: #ffffff;
-  --border-color: #333333;
-  --bg-selected: #2c3e50;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --bg-selected: #162c3e;
 
   --background: var(--bg-app);
   --foreground: var(--text-main);
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
+  --primary: #1877F2;
+  --primary-hover: #ffffff;
   --border: var(--border-color);
   --surface: var(--bg-sidebar);
   --muted-foreground: var(--text-secondary);
   --error: #ef4444;
   --success: #22c55e;
-}
-
-[data-theme='light'] {
-  /* Light Mode Overrides */
-  --bg-app: #ffffff;
-  --bg-sidebar: #ffffff;
-  --text-main: #333333;
-  --text-secondary: #888888;
-  --bg-bubble-me: #007bff;
-  --text-bubble-me: #ffffff;
-  --bg-bubble-other: #f1f0f0;
-  --text-bubble-other: #000000;
-  --border-color: #eeeeee;
-  --bg-selected: #f0f7ff;
 }
 
 * {
@@ -48,8 +33,9 @@ body {
   overflow-x: hidden;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Plus Jakarta Sans", Inter, Arial, Helvetica, sans-serif;
   line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
 }
 
 a {

@@ -1,16 +1,18 @@
 .feedContainer {
   min-height: 100vh;
-  background-color: var(--background);
+  background:
+    radial-gradient(circle at top right, rgba(2, 5, 46, 0.12), transparent 28rem),
+    var(--background);
   color: var(--foreground);
 }
 
 .feedLayout {
-  max-width: 1120px;
+  max-width: 1180px;
   width: 100%;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1rem 1rem 4rem;
   display: grid;
-  grid-template-columns: minmax(0, 680px) minmax(280px, 320px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
   gap: 1rem;
   align-items: start;
 }
@@ -27,27 +29,38 @@
 .peoplePanel {
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 16px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
 }
 
 .welcomeSection {
   margin-bottom: 1rem;
   padding: 1.25rem;
+  overflow: hidden;
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(26, 35, 126, 0.88), rgba(1, 22, 39, 0.95)),
+    var(--surface);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .welcomeSection h2 {
   margin: 0 0 0.25rem;
-  font-size: 1.35rem;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  font-weight: 900;
 }
 
 .welcomeSection p {
   margin: 0;
-  color: var(--muted-foreground);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .composer {
   margin-bottom: 1rem;
   padding: 1rem;
+  background: rgba(10, 31, 48, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .composerHeader {
@@ -66,13 +79,13 @@
   width: 100%;
   min-height: 38px;
   border: 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   outline: none;
   background: transparent;
   color: var(--foreground);
   font: inherit;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   padding: 0 0 0.45rem;
 }
 
@@ -103,16 +116,16 @@
   gap: 0.65rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .segmentedControl {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background-color: var(--background);
+  padding: 0.18rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  background-color: #162c3e;
   margin-right: auto;
 }
 
@@ -124,10 +137,11 @@
 .primaryButton {
   min-height: 36px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 10px;
   font: inherit;
   font-size: 0.9rem;
   cursor: pointer;
+  font-weight: 800;
 }
 
 .segmentedControl button {
@@ -137,9 +151,9 @@
 }
 
 .segmentedControl .activeSegment {
-  background-color: var(--surface);
-  color: var(--foreground);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  background-color: var(--primary);
+  color: #011627;
+  box-shadow: 0 0 15px rgba(139, 201, 38, 0.3);
 }
 
 .fileButton,
@@ -148,9 +162,9 @@
   align-items: center;
   justify-content: center;
   padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
-  color: var(--foreground);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: #162c3e;
+  color: #cbd5e1;
 }
 
 .fileButton input,
@@ -162,12 +176,14 @@
 .commentForm button {
   padding: 0 0.9rem;
   background-color: var(--primary);
-  color: #ffffff;
+  color: #011627;
+  box-shadow: 0 0 15px rgba(139, 201, 38, 0.26);
 }
 
 .primaryButton:hover:not(:disabled),
 .commentForm button:hover {
   background-color: var(--primary-hover);
+  color: #011627;
 }
 
 .primaryButton:disabled {
@@ -189,9 +205,9 @@
   flex-wrap: wrap;
   gap: 0.45rem;
   min-height: 42px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background-color: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background-color: #162c3e;
   padding: 0.35rem;
 }
 
@@ -245,9 +261,9 @@
   gap: 0.65rem;
   width: 100%;
   min-height: 46px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background-color: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background-color: #162c3e;
   color: var(--foreground);
   font: inherit;
   text-align: left;
@@ -299,6 +315,8 @@
   position: sticky;
   top: 1rem;
   padding: 1rem;
+  background: rgba(10, 31, 48, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .requestsSection {
@@ -306,7 +324,7 @@
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .peopleHeader {
@@ -320,14 +338,15 @@
 .peopleHeader h2 {
   margin: 0;
   font-size: 1rem;
+  font-weight: 900;
 }
 
 .peopleHeader span {
   min-width: 28px;
   min-height: 28px;
   border-radius: 999px;
-  background: var(--background);
-  color: var(--muted-foreground);
+  background: rgba(139, 201, 38, 0.14);
+  color: var(--primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -338,9 +357,9 @@
 .peopleSearch {
   width: 100%;
   min-height: 38px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: #162c3e;
   color: var(--foreground);
   font: inherit;
   padding: 0 0.75rem;
@@ -362,9 +381,9 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(22, 44, 62, 0.72);
 }
 
 .peopleProfileLink,
@@ -389,9 +408,9 @@
   display: grid;
   gap: 0.55rem;
   padding: 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(22, 44, 62, 0.72);
 }
 
 .requestProfileLink {
@@ -462,7 +481,7 @@
 .peopleSecondaryButton,
 .peoplePagination button {
   min-height: 32px;
-  border-radius: 6px;
+  border-radius: 10px;
   font: inherit;
   font-size: 0.82rem;
   font-weight: 700;
@@ -477,13 +496,13 @@
 .peoplePrimaryButton {
   border: 1px solid var(--primary);
   background: var(--primary);
-  color: #ffffff;
+  color: #011627;
 }
 
 .peopleSecondaryButton {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--foreground);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(139, 201, 38, 0.12);
+  color: var(--primary);
 }
 
 .peoplePrimaryButton:disabled,
@@ -500,20 +519,22 @@
   gap: 0.5rem;
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--muted-foreground);
   font-size: 0.85rem;
 }
 
 .peoplePagination button {
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #162c3e;
   color: var(--foreground);
   padding: 0 0.65rem;
 }
 
 .postCard {
   padding: 1rem;
+  background: rgba(10, 31, 48, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .postHeader {
@@ -525,6 +546,7 @@
 .postHeader h3 {
   margin: 0;
   font-size: 1rem;
+  font-weight: 900;
 }
 
 .postHeader p {
@@ -544,6 +566,7 @@
   font-size: 1.12rem;
   line-height: 1.3;
   overflow-wrap: anywhere;
+  font-weight: 900;
 }
 
 .postTitle + .postContent {
@@ -557,8 +580,8 @@
   display: block;
   margin-top: 0.9rem;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background-color: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: #162c3e;
 }
 
 .postActions {
@@ -569,12 +592,12 @@
 
 .postActions button {
   padding: 0 0.75rem;
-  background-color: transparent;
+  background-color: rgba(139, 201, 38, 0.12);
   color: var(--primary);
 }
 
 .postActions button:hover {
-  background-color: var(--background);
+  background-color: rgba(139, 201, 38, 0.2);
 }
 
 .comments {
@@ -582,7 +605,7 @@
   gap: 0.75rem;
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .comment {
@@ -595,7 +618,7 @@
   max-width: calc(100% - 42px);
   padding: 0.6rem 0.75rem;
   border-radius: 8px;
-  background-color: var(--background);
+  background-color: #162c3e;
 }
 
 .commentBody strong {
@@ -614,7 +637,7 @@
   display: block;
   margin-top: 0.45rem;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .commentForm {
@@ -669,7 +692,7 @@
 .avatarPlaceholder {
   flex-shrink: 0;
   border-radius: 50%;
-  background-color: var(--border);
+  background-color: #162c3e;
   color: var(--foreground);
   display: inline-flex;
   align-items: center;
@@ -701,9 +724,9 @@
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background-color: rgba(10, 31, 48, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
 }
 
 .avatarPlaceholder {
@@ -724,7 +747,7 @@
 .linePlaceholderShort {
   height: 12px;
   border-radius: 6px;
-  background-color: var(--border);
+  background-color: #162c3e;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 

@@ -62,29 +62,33 @@ func (r *Repository) GetPostByID(id string) (*Post, error) {
 
 func (r *Repository) GetVisiblePosts(viewerID string) ([]*Post, error) {
 	query := `
-		SELECT p.id, p.user_id, p.title, p.content, p.image, p.privacy, p.created_at,
-		       u.id, u.first_name, u.last_name, u.nickname, u.avatar
-		FROM posts p
-		JOIN users u ON u.id = p.user_id
-		WHERE p.user_id = ?
-		   OR p.privacy = 'public'
-		   OR (
-		   	p.privacy = 'followers'
-		   	AND EXISTS (
-		   		SELECT 1 FROM followers f
-		   		WHERE f.follower_id = ? AND f.followed_id = p.user_id
-		   	)
-		   )
-		   OR (
-		   	p.privacy = 'private_selected'
-		   	AND EXISTS (
-		   		SELECT 1 FROM post_allowed_users pau
-		   		WHERE pau.post_id = p.id AND pau.user_id = ?
-		   	)
-		   )
-		ORDER BY p.created_at DESC`
+        SELECT p.id, p.user_id, p.title, p.content, p.image, p.privacy, p.created_at,
+               u.id, u.first_name, u.last_name, u.nickname, u.avatar
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        WHERE p.user_id = ?
+           OR p.privacy = 'public'
+           OR (
+            p.privacy = 'followers'
+            AND EXISTS (
+             SELECT 1 FROM followers f
+             WHERE f.follower_id = ? AND f.followed_id = p.user_id
+            )
+           )
+           OR (
+            p.privacy = 'private_selected'
+            AND EXISTS (
+             SELECT 1 FROM post_allowed_users pau
+             WHERE pau.post_id = p.id AND pau.user_id = ?
+            )
+            AND EXISTS (
+             SELECT 1 FROM followers f
+             WHERE f.follower_id = ? AND f.followed_id = p.user_id
+            )
+           )
+        ORDER BY p.created_at DESC`
 
-	rows, err := r.db.Query(query, viewerID, viewerID, viewerID)
+	rows, err := r.db.Query(query, viewerID, viewerID, viewerID, viewerID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get feed: %w", err)
 	}
@@ -110,31 +114,35 @@ func (r *Repository) GetVisiblePosts(viewerID string) ([]*Post, error) {
 
 func (r *Repository) CanUserSeePost(viewerID, postID string) (bool, error) {
 	query := `
-		SELECT EXISTS (
-			SELECT 1
-			FROM posts p
-			WHERE p.id = ?
-			  AND (
-			  	p.user_id = ?
-			  	OR p.privacy = 'public'
-			  	OR (
-			  		p.privacy = 'followers'
-			  		AND EXISTS (
-			  			SELECT 1 FROM followers f
-			  			WHERE f.follower_id = ? AND f.followed_id = p.user_id
-			  		)
-			  	)
-			  	OR (
-			  		p.privacy = 'private_selected'
-			  		AND EXISTS (
-			  			SELECT 1 FROM post_allowed_users pau
-			  			WHERE pau.post_id = p.id AND pau.user_id = ?
-			  		)
-			  	)
-			  )
-		)`
+        SELECT EXISTS (
+            SELECT 1
+            FROM posts p
+            WHERE p.id = ?
+              AND (
+                p.user_id = ?
+                OR p.privacy = 'public'
+                OR (
+                    p.privacy = 'followers'
+                    AND EXISTS (
+                        SELECT 1 FROM followers f
+                        WHERE f.follower_id = ? AND f.followed_id = p.user_id
+                    )
+                )
+                OR (
+                    p.privacy = 'private_selected'
+                    AND EXISTS (
+                        SELECT 1 FROM post_allowed_users pau
+                        WHERE pau.post_id = p.id AND pau.user_id = ?
+                    )
+                    AND EXISTS (
+                        SELECT 1 FROM followers f
+                        WHERE f.follower_id = ? AND f.followed_id = p.user_id
+                    )
+                )
+              )
+        )`
 	var canSee bool
-	if err := r.db.QueryRow(query, postID, viewerID, viewerID, viewerID).Scan(&canSee); err != nil {
+	if err := r.db.QueryRow(query, postID, viewerID, viewerID, viewerID, viewerID).Scan(&canSee); err != nil {
 		return false, fmt.Errorf("failed to check post visibility: %w", err)
 	}
 	return canSee, nil
@@ -160,7 +168,7 @@ func (r *Repository) GetFollowers(userID string) ([]*Follower, error) {
 		FROM followers f
 		JOIN users u ON u.id = f.follower_id
 		WHERE f.followed_id = ?
-		ORDER BY LOWER(u.first_name), LOWER(u.last_name)`
+		ORDER BY COALESCE(u.nickname, u.first_name || ' ' || u.last_name) COLLATE NOCASE`
 	rows, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get followers: %w", err)

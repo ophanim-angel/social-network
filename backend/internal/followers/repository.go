@@ -285,11 +285,35 @@ func (r *Repository) listFollowUsers(query, viewerID, userID string) ([]UserSumm
 }
 
 func (r *Repository) UpdateVisibility(userID string, isPublic bool) error {
-	_, err := r.db.Exec(`UPDATE users SET is_public = ? WHERE id = ?`, isPublic, userID)
+	tx, err := r.db.Begin()
 	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(`UPDATE users SET is_public = ? WHERE id = ?`, isPublic, userID); err != nil {
 		return fmt.Errorf("failed to update profile visibility: %w", err)
 	}
-	return nil
+
+	if isPublic {
+		if _, err := tx.Exec(`
+			INSERT OR IGNORE INTO followers (follower_id, followed_id)
+			SELECT requester_id, target_id FROM follow_requests 
+			WHERE target_id = ? AND status = 'pending'
+		`, userID); err != nil {
+			return fmt.Errorf("failed to convert pending requests to followers: %w", err)
+		}
+
+		if _, err := tx.Exec(`
+			UPDATE follow_requests 
+			SET status = 'accepted', updated_at = ? 
+			WHERE target_id = ? AND status = 'pending'
+		`, time.Now(), userID); err != nil {
+			return fmt.Errorf("failed to update pending requests status: %w", err)
+		}
+	}
+
+	return tx.Commit()
 }
 
 type rowScanner interface {

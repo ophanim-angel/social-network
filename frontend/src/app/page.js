@@ -26,6 +26,7 @@ import {
   MaxPostContentLen,
   MaxPostTitleLen,
 } from "@/lib/limits";
+import Notification from "@/components/ui/Notification";
 import styles from "./Feed.module.css";
 
 const privacyOptions = [
@@ -38,9 +39,11 @@ const peoplePageSize = 6;
 const commentSubmitDebounceMs = 350;
 
 export default function Feed() {
+  // Router helper for client navigation.
   const router = useRouter();
   const commentSubmitTimers = useRef({});
   const activeCommentSubmissions = useRef(new Set());
+  // Local state for feed data and UI state.
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState([]);
@@ -53,18 +56,18 @@ export default function Feed() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [privacy, setPrivacy] = useState("public");
-  const [mentionInput, setMentionInput] = useState("");
+  const [mentionInput, setMentionInput] = useState("@");
   const [selectedFollowerIds, setSelectedFollowerIds] = useState([]);
   const [image, setImage] = useState(null);
   const [expandedPosts, setExpandedPosts] = useState({});
   const [commentDrafts, setCommentDrafts] = useState({});
   const [commentImages, setCommentImages] = useState({});
-  const [commentErrors, setCommentErrors] = useState({});
   const [postingComments, setPostingComments] = useState({});
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isPosting, setIsPosting] = useState(false);
 
+  // Load initial feed and related data when the component mounts.
   useEffect(() => {
     let isMounted = true;
 
@@ -106,10 +109,12 @@ export default function Feed() {
     };
   }, []);
 
+  // Compute the allowed follower IDs for private posts.
   const allowedUserIds = useMemo(() => {
     return privacy === "private_selected" ? selectedFollowerIds : [];
   }, [privacy, selectedFollowerIds]);
 
+  // Filter the people list by the current search query.
   const filteredPeople = useMemo(() => {
     const query = peopleQuery.trim().toLowerCase();
     return users
@@ -153,9 +158,10 @@ export default function Feed() {
       });
   }, [followers, mentionQuery, selectedFollowerIds]);
 
+  // Submit a new post to the backend API.
   const handleCreatePost = async (event) => {
     event.preventDefault();
-    const form = event.currentTarget;
+    const form = getSubmitForm(event);
     setError("");
     setIsPosting(true);
 
@@ -172,10 +178,10 @@ export default function Feed() {
       setTitle("");
       setContent("");
       setPrivacy("public");
-      setMentionInput("");
+      setMentionInput("@");
       setSelectedFollowerIds([]);
       setImage(null);
-      form.reset();
+      form?.reset();
     } catch (err) {
       setError(err.message || "Could not create post");
     } finally {
@@ -184,20 +190,22 @@ export default function Feed() {
   };
 
   const handleMentionInputChange = (event) => {
-    setMentionInput(event.target.value);
+    const value = event.target.value;
+    setMentionInput(value.startsWith("@") ? value : `@${value}`);
   };
 
   const handleSelectFollower = (followerId) => {
     setSelectedFollowerIds((current) =>
       current.includes(followerId) ? current : [...current, followerId]
     );
-    setMentionInput("");
+    setMentionInput("@");
   };
 
   const handleRemoveFollower = (followerId) => {
     setSelectedFollowerIds((current) => current.filter((id) => id !== followerId));
   };
 
+  // Toggle comment thread visibility for a post.
   const handleToggleComments = async (postId) => {
     if (expandedPosts[postId]) {
       setExpandedPosts((current) => {
@@ -221,29 +229,14 @@ export default function Feed() {
     }
   };
 
-  const clearCommentError = (postId) => {
-    setCommentErrors((current) => {
-      if (!current[postId]) {
-        return current;
-      }
-
-      const next = { ...current };
-      delete next[postId];
-      return next;
-    });
-  };
-
   const handleCommentImageChange = (event, postId) => {
     const file = event.target.files?.[0] || null;
-    clearCommentError(postId);
+    setError("");
 
     if (file && file.size > MaxImageSizeBytes) {
       event.target.value = "";
       setCommentImages((current) => ({ ...current, [postId]: null }));
-      setCommentErrors((current) => ({
-        ...current,
-        [postId]: `Images must be ${MaxImageSizeMB} MB or smaller`,
-      }));
+      setError(`Images must be ${MaxImageSizeMB} MB or smaller`);
       return;
     }
 
@@ -272,13 +265,9 @@ export default function Feed() {
       }));
       setCommentDrafts((current) => ({ ...current, [postId]: "" }));
       setCommentImages((current) => ({ ...current, [postId]: null }));
-      clearCommentError(postId);
-      form.reset();
+      form?.reset();
     } catch (err) {
-      setCommentErrors((current) => ({
-        ...current,
-        [postId]: err.message || "Could not add comment",
-      }));
+      setError(err.message || "Could not add comment");
     } finally {
       activeCommentSubmissions.current.delete(postId);
       setPostingComments((current) => ({ ...current, [postId]: false }));
@@ -287,9 +276,8 @@ export default function Feed() {
 
   const handleCreateComment = (event, postId) => {
     event.preventDefault();
-    const form = event.currentTarget;
+    const form = getSubmitForm(event);
     setError("");
-    clearCommentError(postId);
 
     if (activeCommentSubmissions.current.has(postId)) {
       return;
@@ -370,6 +358,7 @@ export default function Feed() {
 
   return (
     <div className={styles.feedContainer}>
+      <Notification message={error} type="error" onClose={() => setError("")} />
       <div className={styles.feedLayout}>
         <main className={styles.mainContent}>
           <section className={styles.welcomeSection}>
@@ -420,7 +409,7 @@ export default function Feed() {
                     onClick={() => handleRemoveFollower(follower.id)}
                     aria-label={`Remove ${displayName(follower)}`}
                   >
-                    {displayName(follower)}
+                    @{mentionHandle(follower)}
                   </button>
                 ))}
                 <input
@@ -428,7 +417,7 @@ export default function Feed() {
                   type="text"
                   value={mentionInput}
                   onChange={handleMentionInputChange}
-                  placeholder="Search by first or last name"
+                  placeholder="@username"
                   autoComplete="off"
                   maxLength={MaxGroupInviteesLen}
                 />
@@ -451,7 +440,7 @@ export default function Feed() {
                       <Avatar user={follower} size="small" />
                       <span>
                         <strong>{displayName(follower)}</strong>
-                        {follower.nickname && <small>@{mentionHandle(follower)}</small>}
+                        <small>@{mentionHandle(follower)}</small>
                       </span>
                     </button>
                   ))
@@ -489,7 +478,6 @@ export default function Feed() {
           </div>
 
           {image && <p className={styles.fileName}>{image.name}</p>}
-          {error && <p className={styles.errorMessage}>{error}</p>}
         </form>
 
         <section className={styles.postsSection}>
@@ -574,11 +562,6 @@ export default function Feed() {
                       {commentImages[post.id] && (
                         <p className={styles.commentFileName}>
                           {commentImages[post.id].name}
-                        </p>
-                      )}
-                      {commentErrors[post.id] && (
-                        <p className={styles.commentErrorMessage} aria-live="polite">
-                          {commentErrors[post.id]}
                         </p>
                       )}
                     </form>
@@ -802,6 +785,11 @@ function PostPlaceholder() {
       </div>
     </div>
   );
+}
+
+function getSubmitForm(event) {
+  const form = event.currentTarget || event.target;
+  return form instanceof HTMLFormElement ? form : null;
 }
 
 function displayName(user) {

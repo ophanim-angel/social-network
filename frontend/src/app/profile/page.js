@@ -16,6 +16,7 @@ import {
   updateProfileVisibility,
 } from "@/lib/api";
 import { MaxCommentLen } from "@/lib/limits";
+import Notification from "@/components/ui/Notification";
 import styles from "./Profile.module.css";
 
 export default function ProfilePage() {
@@ -218,7 +219,7 @@ function ProfileContent({ requestedProfileId }) {
   if (!profile) {
     return (
       <main className={styles.profilePage}>
-        {error && <p className={styles.errorMessage}>{error}</p>}
+        <Notification message={error} type="error" onClose={() => setError("")} />
         <div className={styles.profileGrid}>
           <section className={styles.sectionPanel}>
             <h2>Profile unavailable</h2>
@@ -231,6 +232,7 @@ function ProfileContent({ requestedProfileId }) {
 
   return (
     <main className={styles.profilePage}>
+      <Notification message={error} type="error" onClose={() => setError("")} />
       <section className={styles.profilePanel}>
         <div className={styles.avatar}>
           {profile?.avatar ? (
@@ -305,8 +307,6 @@ function ProfileContent({ requestedProfileId }) {
           />
         )}
       </section>
-
-      {error && <p className={styles.errorMessage}>{error}</p>}
 
       <div className={styles.profileGrid}>
         {!canViewDetails ? (

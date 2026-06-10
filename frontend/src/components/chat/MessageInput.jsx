@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
@@ -9,6 +9,8 @@ const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 export default function MessageInput({ target, onSendMessage }) {
   const [content, setContent] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const inputRef = useRef(null);
+  const cursorRef = useRef(0);
   const { sendMessage } = useWebSocket();
 
   const handleSend = (e) => {
@@ -39,6 +41,7 @@ export default function MessageInput({ target, onSendMessage }) {
   };
 
   const handleKeyDown = (e) => {
+    cursorRef.current = e.currentTarget.selectionStart ?? content.length;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -46,7 +49,30 @@ export default function MessageInput({ target, onSendMessage }) {
   };
 
   const onEmojiClick = (emojiData) => {
-    setContent((prev) => prev + emojiData.emoji);
+    const cursorPos = cursorRef.current;
+
+    setContent((prev) => {
+      const safePos = Math.min(cursorPos, prev.length);
+      return prev.slice(0, safePos) + emojiData.emoji + prev.slice(safePos);
+    });
+
+    const newCursorPos = cursorPos + emojiData.emoji.length;
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+        cursorRef.current = newCursorPos;
+      }
+    }, 0);
+  };
+
+  const handleContentChange = (e) => {
+    setContent(e.target.value);
+    cursorRef.current = e.target.selectionStart ?? e.target.value.length;
+  };
+
+  const rememberCursor = (e) => {
+    cursorRef.current = e.currentTarget.selectionStart ?? content.length;
   };
 
   return (
@@ -74,10 +100,15 @@ export default function MessageInput({ target, onSendMessage }) {
         )}
       </div>
       <input
+        ref={inputRef}
         type="text"
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={handleContentChange}
         onKeyDown={handleKeyDown}
+        onClick={rememberCursor}
+        onKeyUp={rememberCursor}
+        onSelect={rememberCursor}
+        onBlur={rememberCursor}
         placeholder="Type a message..."
         style={inputStyle}
       />
