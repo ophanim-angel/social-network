@@ -31,7 +31,22 @@ import {
 } from "@/lib/limits";
 import styles from "./Groups.module.css";
 
+/*
+  Groups page
+
+  This file implements the Groups UI and related helper utilities.
+  Organization:
+  - React state and hooks for loading groups and selected group
+  - Event handlers for creating/inviting/posts/comments/events
+  - Presentational components (InviteSuggestions, Avatar)
+  - Small pure helper functions for text/date handling and mention logic
+
+  The goal of the following changes is to make the file easier to scan
+  by adding short explanatory comments and JSDoc for non-trivial helpers.
+*/
+
 export default function GroupsPage() {
+  // --- State: UI state and form drafts
   const [groups, setGroups] = useState([]);
   const [invitations, setInvitations] = useState([]);
   const [followers, setFollowers] = useState([]);
@@ -87,6 +102,7 @@ export default function GroupsPage() {
     }
   }, []);
 
+  // --- Effects: load initial groups
   useEffect(() => {
     let isMounted = true;
 
@@ -121,6 +137,7 @@ export default function GroupsPage() {
     };
   }, [selectedGroupId]);
 
+  // --- Effect: load selected group when selection changes
   useEffect(() => {
     if (!selectedGroupId) return;
     let isMounted = true;
@@ -144,6 +161,7 @@ export default function GroupsPage() {
     };
   }, [selectedGroupId]);
 
+  // --- Derived helpers (from loaded group detail)
   const selectedGroup = detail?.group;
   const isMember = Boolean(selectedGroup?.is_member);
   const isCreator = Boolean(detail?.requests);
@@ -153,10 +171,18 @@ export default function GroupsPage() {
     [drafts.invitees, followers, createInviteIds],
   );
   const memberInviteSuggestions = useMemo(
-    () => getMentionSuggestions(drafts.inviteUser, followers, false, memberInviteId ? [memberInviteId] : []),
-    [drafts.inviteUser, followers, memberInviteId],
+    () =>
+      getMentionSuggestions(
+        drafts.inviteUser,
+        followers,
+        false,
+        memberInviteId ? [memberInviteId] : [],
+        detail?.members?.map((m) => m.id) || [],
+      ),
+    [drafts.inviteUser, followers, memberInviteId, detail?.members],
   );
 
+  // --- Handlers: form and UI handlers
   function updateDraft(key, value) {
     setDrafts((current) => ({ ...current, [key]: value }));
   }
@@ -261,6 +287,10 @@ export default function GroupsPage() {
     event.preventDefault();
     if (!memberInviteId || !selectedGroupId) return;
     setError("");
+    if (detail?.members?.some((m) => m.id === memberInviteId)) {
+      setError("User is already a member");
+      return;
+    }
     try {
       await inviteToGroup(selectedGroupId, memberInviteId);
       updateDraft("inviteUser", "");
@@ -390,6 +420,7 @@ export default function GroupsPage() {
     }
   }
 
+  // --- Render: main UI
   return (
     <div className={styles.groupsPage}>
       <aside className={styles.sidebar}>
@@ -738,6 +769,7 @@ export default function GroupsPage() {
   );
 }
 
+// --- Presentational: suggestion / avatar components
 function InviteSuggestions({ users, onSelect }) {
   return (
     <div className={styles.suggestions} role="listbox">
@@ -760,29 +792,51 @@ function InviteSuggestions({ users, onSelect }) {
   );
 }
 
-function getMentionSuggestions(value, followers, allowCommaList, selectedUserIds = []) {
+// --- Helpers: mention and formatting
+/**
+ * Build mention/autocomplete suggestions from `followers`.
+ *
+ * Parameters:
+ * - `value`: current input value (used to find the active token)
+ * - `followers`: array of candidate users
+ * - `allowCommaList`: whether the field allows comma-separated mentions
+ * - `selectedUserIds`: users already chosen in this input (filter these out)
+ * - `excludedUserIds`: users to always exclude (e.g. current group members)
+ */
+function getMentionSuggestions(
+  value,
+  followers,
+  allowCommaList,
+  selectedUserIds = [],
+  excludedUserIds = [],
+) {
   const mention = getActiveMention(value, allowCommaList);
   const query = mention.toLowerCase();
   const selected = new Set(selectedUserIds);
-  return followers
-    .filter((user) => !selected.has(user.id))
-    .filter((user) => {
-      if (!query) {
-        return true;
-      }
+  const excluded = new Set(excludedUserIds);
 
-      return (
-        mentionHandle(user).toLowerCase().includes(query) ||
-        displayName(user).toLowerCase().includes(query)
-      );
+  // Filter out already-selected and explicitly excluded users first,
+  // then match the remaining users against the query (if any).
+  return followers
+    .filter((user) => !selected.has(user.id) && !excluded.has(user.id))
+    .filter((user) => {
+      if (!query) return true;
+
+      const handle = mentionHandle(user).toLowerCase();
+      const name = displayName(user).toLowerCase();
+      return handle.includes(query) || name.includes(query);
     });
 }
 
+/**
+ * Return the active mention token from the input value.
+ * For comma-separated fields we only consider the text after the last comma.
+ */
 function getActiveMention(value, allowCommaList) {
-  const token = allowCommaList ? value.split(",").at(-1).trimStart() : value.trimStart();
-  return token;
+  return allowCommaList ? value.split(",").at(-1).trimStart() : value.trimStart();
 }
 
+// True if there's any non-empty token which should show mention suggestions.
 function hasActiveMention(value, allowCommaList) {
   return Boolean(getActiveMention(value, allowCommaList));
 }
@@ -794,6 +848,7 @@ function appendMentionTrigger(value, allowCommaList) {
 
   if (!value.trim()) return value;
 
+  // Ensure a comma + space separator exists for the next mention.
   return value.trimEnd().endsWith(",") ? `${value.trimEnd()} ` : `${value}, `;
 }
 
@@ -802,6 +857,8 @@ function replaceMentionToken(value, label, allowCommaList) {
   if (!allowCommaList) return replacement;
   const parts = value.split(",");
   parts[parts.length - 1] = ` ${label}`;
+  // Reconstruct the comma-separated list and leave a trailing comma+space
+  // so the user can continue adding more mentions.
   return `${parts.join(",").trimStart()}, `;
 }
 
@@ -817,8 +874,12 @@ function displayName(user) {
 function mentionHandle(user) {
   return user?.nickname?.trim()?.replace(/^@+/, "") || "";
 }
-
-function Avatar({ user, size = "default" }) {
+/**
+ * Avatar component: shows photo when available otherwise a single initial.
+ * `size` accepts "default" or "small".
+ */
+function 
+Avatar({ user, size = "default" }) {
   const initial = user?.first_name?.trim()?.charAt(0)?.toUpperCase() || "?";
   const className = size === "small" ? styles.avatarSmall : styles.avatar;
 
