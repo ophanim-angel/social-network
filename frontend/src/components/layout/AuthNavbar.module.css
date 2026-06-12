@@ -3,19 +3,22 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--surface);
-  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  background-color: color-mix(in srgb, var(--background) 86%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
   position: sticky;
   top: 0;
   z-index: 2000;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .titleLink {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 900;
   margin: 0;
   color: var(--foreground);
+  letter-spacing: 0;
 }
 
 .navActions {
@@ -29,14 +32,17 @@
   display: inline-flex;
   align-items: center;
   padding: 0 0.75rem;
-  border-radius: 6px;
-  color: var(--foreground);
-  font-size: 0.92rem;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .navLink:hover,
 .navLink:focus-visible {
-  background-color: var(--background);
+  background-color: #162c3e;
+  color: var(--primary);
   outline: none;
 }
 
@@ -44,9 +50,9 @@
 .avatarButton {
   width: 42px;
   height: 42px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
   border-radius: 50%;
-  background: var(--background);
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
   color: var(--foreground);
   display: inline-flex;
   align-items: center;
@@ -58,7 +64,7 @@
 .iconButton:hover,
 .avatarButton:hover,
 .avatarMenu:focus-within .avatarButton {
-  background-color: var(--border);
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--surface));
   border-color: var(--primary);
 }
 
@@ -101,15 +107,17 @@
   top: calc(100% + 0.5rem);
   right: 0;
   padding: 0.35rem;
-  background-color: var(--surface);
+  background-color: color-mix(in srgb, var(--surface) 92%, transparent);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
   opacity: 0;
   pointer-events: none;
   transform: translateY(-4px);
   transition: opacity 0.15s ease, transform 0.15s ease;
   z-index: 2001;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .avatarMenu:hover .menuList,
@@ -138,7 +146,7 @@
 
 .menuItem:hover:not(:disabled),
 .menuItem:focus-visible {
-  background-color: var(--background);
+  background-color: #162c3e;
   outline: none;
 }
 

@@ -368,6 +368,27 @@ func (s *Service) CreateEvent(userID, groupID string, req CreateEventRequest) (*
 	if err := s.repo.CreateEvent(event); err != nil {
 		return nil, err
 	}
+
+	group, err := s.repo.GetGroupByID(userID, groupID)
+	if err != nil {
+		return nil, err
+	}
+	if group != nil {
+		members, err := s.repo.GetMembers(groupID)
+		if err != nil {
+			return nil, err
+		}
+		content := "New event in " + group.Title + ": " + event.Title
+		for _, member := range members {
+			if member.ID == userID {
+				continue
+			}
+			if err := s.notifyUser(member.ID, "group_event", content, &groupID); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	events, err := s.repo.GetEvents(groupID, userID)
 	if err != nil {
 		return nil, err

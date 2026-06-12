@@ -13,6 +13,7 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// Handle new user registration requests.
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	writeJSONHeader(w)
 
@@ -44,6 +45,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
 }
 
+// Handle user login and session creation.
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	writeJSONHeader(w)
 
@@ -84,6 +86,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"})
 }
 
+// Return information for the currently authenticated user.
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	writeJSONHeader(w)
 

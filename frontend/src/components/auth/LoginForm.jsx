@@ -9,6 +9,7 @@ import { saveSession } from "@/lib/session";
 import Notification from "@/components/ui/Notification";
 import styles from "./LoginForm.module.css";
 
+// Login form handles user sign in.
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -16,16 +17,19 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: "", type: "" });
 
+  // Close the current notification message.
   const closeNotification = () => {
     setNotification({ message: "", type: "" });
   };
 
+  // Handle login form submission.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setNotification({ message: "", type: "" });
     setIsLoading(true);
 
     try {
+      // Prepare trimmed credentials for API request.
       const credentials = {
         email: email.trim(),
         password,
@@ -47,6 +51,7 @@ export default function LoginForm() {
     }
   };
 
+  // Render the login form UI.
   return (
     <div className={styles.formContainer}>
       <Notification 

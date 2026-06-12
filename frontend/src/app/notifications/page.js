@@ -99,6 +99,7 @@ function getIcon(type) {
     case "group_invite": return "👥";
     case "group_request":
     case "group_request_response": return "📩";
+    case "group_event":
     case "event": return "📅";
     default: return "🔔";
   }

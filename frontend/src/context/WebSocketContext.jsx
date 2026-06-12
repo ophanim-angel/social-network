@@ -234,7 +234,8 @@ function isSocialNotificationType(item) {
     item?.type === "follow_accept" ||
     item?.type === "group_invite" ||
     item?.type === "group_request" ||
-    item?.type === "group_request_response"
+    item?.type === "group_request_response" ||
+    item?.type === "group_event"
   );
 }
 

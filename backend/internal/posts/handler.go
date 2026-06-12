@@ -20,6 +20,7 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// Handle creating a new post from a client request.
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	writeJSONHeader(w)
 
@@ -54,6 +55,7 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(post)
 }
 
+// Handle fetching the user's personalized feed.
 func (h *Handler) Feed(w http.ResponseWriter, r *http.Request) {
 	writeJSONHeader(w)
 
@@ -172,6 +174,7 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(comment)
 }
 
+// Serve uploaded post images if the request is authorized.
 func (h *Handler) ServeUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeJSONHeader(w)
@@ -196,6 +199,7 @@ func (h *Handler) ServeUpload(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fullPath)
 }
 
+// Parse a post creation request from form or JSON payload.
 func parseCreatePostRequest(w http.ResponseWriter, r *http.Request) (CreatePostRequest, *multipart.FileHeader, error) {
 	var req CreatePostRequest
 	var fileHeader *multipart.FileHeader

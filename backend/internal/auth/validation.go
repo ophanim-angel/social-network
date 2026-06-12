@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/base64"
 	"errors"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -155,7 +156,24 @@ func IsValidAvatar(avatar *string) bool {
 	if err != nil {
 		return false
 	}
-	return len(data) <= maxAvatarBytes
+	if len(data) == 0 || len(data) > maxAvatarBytes {
+		return false
+	}
+	return avatarContentType(matches[1]) == http.DetectContentType(firstBytes(data, 512))
+}
+
+func avatarContentType(format string) string {
+	if format == "jpg" {
+		return "image/jpeg"
+	}
+	return "image/" + format
+}
+
+func firstBytes(data []byte, limit int) []byte {
+	if len(data) < limit {
+		return data
+	}
+	return data[:limit]
 }
 
 func trimOptional(value **string) {

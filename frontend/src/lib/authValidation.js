@@ -3,7 +3,6 @@ const alphaPattern = /^[A-Za-z]+$/;
 const allowedAvatarTypes = new Set([
   "image/png",
   "image/jpeg",
-  "image/jpg",
   "image/webp",
   "image/gif",
 ]);
@@ -76,7 +75,7 @@ export function validateSafeText(value) {
   return !/[<>]/.test(value);
 }
 
-export function validateAvatarFile(file) {
+export async function validateAvatarFile(file) {
   if (!file) {
     return "";
   }
@@ -86,5 +85,70 @@ export function validateAvatarFile(file) {
   if (file.size > maxAvatarBytes) {
     return "Avatar must be under 2MB.";
   }
+  if (file.size === 0) {
+    return "Avatar file is empty.";
+  }
+
+  const detectedType = await detectImageType(file);
+  if (detectedType !== file.type) {
+    return "Avatar file content must match a PNG, JPG, JPEG, WEBP, or GIF image.";
+  }
+
+  const canDecode = await canDecodeImage(file);
+  if (!canDecode) {
+    return "Avatar must be a valid image file.";
+  }
   return "";
+}
+
+async function detectImageType(file) {
+  const bytes = new Uint8Array(await file.slice(0, 512).arrayBuffer());
+
+  if (matchesBytes(bytes, [0x89, 0x50, 0x4e, 0x47])) {
+    return "image/png";
+  }
+  if (matchesBytes(bytes, [0xff, 0xd8, 0xff])) {
+    return "image/jpeg";
+  }
+  if (
+    matchesBytes(bytes, [0x47, 0x49, 0x46, 0x38]) &&
+    bytes[5] === 0x61
+  ) {
+    return "image/gif";
+  }
+  if (
+    matchesBytes(bytes, [0x52, 0x49, 0x46, 0x46]) &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+
+  return "";
+}
+
+function matchesBytes(bytes, signature) {
+  if (bytes.length < signature.length) {
+    return false;
+  }
+  return signature.every((byte, index) => bytes[index] === byte);
+}
+
+function canDecodeImage(file) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image.naturalWidth > 0 && image.naturalHeight > 0);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(false);
+    };
+    image.src = url;
+  });
 }
